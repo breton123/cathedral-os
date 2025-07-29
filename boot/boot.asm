@@ -1,4 +1,4 @@
-; boot.asm - bootloader with LBA disk read
+; boot.asm - simple two-stage bootloader
 org 0x7c00
 
 ; Set up stack
@@ -16,40 +16,50 @@ push dx
 int 0x13
 jc error
 
-; Use LBA read
+; Load kernel (sector 1)
 mov ah, 0x42
 pop dx
 push dx
-mov si, disk_packet
+mov si, kernel_packet
 int 0x13
 jc error
 
-; Check if we got data
-mov ax, 0x0000
-mov es, ax
-mov al, [es:0x1000]
-test al, al
-jz error
+; Load stage 2 (sectors 2-4)
+mov ah, 0x42
+pop dx
+push dx
+mov si, stage2_packet
+int 0x13
+jc error
 
-jmp 0x0000:0x1000
+; Show success
+mov ah, 0x0e
+mov al, 'K'
+int 0x10
+
+; Jump to stage 2
+jmp 0x0000:0x1200
 
 error:
-    ; Show error code
     mov ah, 0x0e
     mov al, 'E'
     int 0x10
-    mov al, ah
-    add al, '0'
-    int 0x10
     jmp $
 
-; Disk packet for LBA
-disk_packet:
+; Disk packets
+kernel_packet:
     db 0x10        ; Packet size
     db 0           ; Reserved
-    dw 2           ; Number of sectors (increased from 1 to 2)
+    dw 1           ; Number of sectors
     dd 0x1000      ; Transfer buffer
     dq 1           ; Starting LBA (sector 1)
+
+stage2_packet:
+    db 0x10        ; Packet size
+    db 0           ; Reserved
+    dw 3           ; Number of sectors (3 sectors for stage 2)
+    dd 0x1200      ; Transfer buffer
+    dq 2           ; Starting LBA (sector 2)
 
 ; Boot signature
 times 510 - ($ - $$) db 0

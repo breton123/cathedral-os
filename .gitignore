@@ -2,5 +2,8 @@
 *.o
 *.bin
 *.iso
+*.elf
+*.ld
 /.dist
 /.vscode
+/.cursor
