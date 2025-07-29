@@ -1,0 +1,6 @@
+*.img
+*.o
+*.bin
+*.iso
+/.dist
+/.vscode
