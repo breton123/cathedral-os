@@ -1,0 +1,19 @@
+# Assembly include files
+*.inc
+
+# Boot files
+boot/*.asm
+boot/*.bin
+
+# Kernel files
+kernel/*.asm
+kernel/*.c
+
+# Linker scripts
+*.ld
+
+# Makefiles
+Makefile
+
+# Documentation
+docs/

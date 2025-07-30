@@ -14,7 +14,7 @@ kernel/kernel_entry.o: kernel/kernel_entry.asm
 	nasm -f elf kernel/kernel_entry.asm -o kernel/kernel_entry.o
 
 kernel/kernel.o: kernel/kernel.c
-	gcc -m32 -ffreestanding -fno-pie -c kernel/kernel.c -o kernel/kernel.o
+	gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -march=i386 -fno-builtin -nostdlib -nostartfiles -nodefaultlibs -fno-common -fno-asynchronous-unwind-tables -c kernel/kernel.c -o kernel/kernel.o
 
 kernel.bin: kernel/kernel_entry.o kernel/kernel.o
 	ld -m elf_i386 -T kernel.ld -o kernel.elf $^
@@ -24,12 +24,12 @@ kernel.bin: kernel/kernel_entry.o kernel/kernel.o
 os.img: boot/boot.bin boot/stage2.bin kernel.bin
 	dd if=/dev/zero of=os.img bs=512 count=2880
 	dd if=boot/boot.bin of=os.img conv=notrunc
-	dd if=boot/stage2.bin of=os.img conv=notrunc seek=2
 	dd if=kernel.bin of=os.img conv=notrunc seek=1
+	dd if=boot/stage2.bin of=os.img conv=notrunc seek=2
 
 # Run the image in QEMU
 run:
-	qemu-system-i386 -hda os.img
+	qemu-system-i386 -hda os.img -no-acpi -no-reboot -no-shutdown -d cpu_reset
 
 # Clean build artifacts
 clean:

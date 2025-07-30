@@ -32,11 +32,6 @@ mov si, stage2_packet
 int 0x13
 jc error
 
-; Show success
-mov ah, 0x0e
-mov al, 'K'
-int 0x10
-
 ; Jump to stage 2
 jmp 0x0000:0x1200
 
@@ -50,7 +45,7 @@ error:
 kernel_packet:
     db 0x10        ; Packet size
     db 0           ; Reserved
-    dw 1           ; Number of sectors
+    dw 10          ; Number of sectors (increase from 1 to 10)
     dd 0x1000      ; Transfer buffer
     dq 1           ; Starting LBA (sector 1)
 
