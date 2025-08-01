@@ -1,24 +1,7 @@
-void kernel_main(void) __attribute__((cdecl));
+#ifndef MEMORY_H
+#define MEMORY_H
 
-int test_var = 42;
-
-// Type definitions
-typedef unsigned int uint32_t;
-typedef unsigned short uint16_t;
-typedef unsigned char uint8_t;
-typedef unsigned long long uint64_t;
-
-// VESA structures (copied from vesa.h)
-struct vbe_screen_info {
-    uint32_t physical_buffer;
-    uint16_t width;
-    uint16_t height;
-    uint16_t bytes_per_line;
-    uint8_t bpp;
-    uint8_t bytes_per_pixel;
-} __attribute__((packed));
-
-// E820 memory map structures
+// Memory map entry structure (E820)
 typedef struct {
     uint64_t base_addr;      // Base address of memory region
     uint64_t length;         // Length of memory region
@@ -26,6 +9,7 @@ typedef struct {
     uint32_t acpi_attr;      // ACPI attributes (if supported)
 } __attribute__((packed)) e820_entry_t;
 
+// Memory map data structure
 typedef struct {
     uint16_t entry_count;    // Number of entries
     e820_entry_t entries[64]; // Array of memory entries
@@ -41,14 +25,13 @@ typedef struct {
 // Memory map location (set by bootloader)
 #define MEMORY_MAP_ADDR         0x7E00
 
-void kernel_main(void) {
-    // Debug: Write a character to video memory to show kernel is running
-    volatile char* video_memory = (char*)0xb8000;
-    video_memory[6] = 'K';
-    video_memory[7] = 0x0f;
+// Function to get memory map
+memory_map_t* get_memory_map(void);
 
-    // Simple infinite loop
-    while (1) {
-        __asm__ volatile("hlt");
-    }
-}
+// Function to find usable memory regions
+uint64_t find_usable_memory(uint64_t size, uint64_t alignment);
+
+// Function to check if address is in usable memory
+int is_address_usable(uint64_t addr, uint64_t size);
+
+#endif // MEMORY_H

@@ -9,15 +9,17 @@ boot/boot.bin: boot/boot.asm
 boot/stage2.bin: boot/stage2.asm
 	nasm -f bin boot/stage2.asm -o boot/stage2.bin
 
-# Assemble the kernel (flat binary)
+# Assemble the kernel entry point
 kernel/kernel_entry.o: kernel/kernel_entry.asm
 	nasm -f elf kernel/kernel_entry.asm -o kernel/kernel_entry.o
 
+# Compile the main kernel
 kernel/kernel.o: kernel/kernel.c
 	gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -march=i386 -fno-builtin -nostdlib -nostartfiles -nodefaultlibs -fno-common -fno-asynchronous-unwind-tables -c kernel/kernel.c -o kernel/kernel.o
 
+# Link kernel (no drivers)
 kernel.bin: kernel/kernel_entry.o kernel/kernel.o
-	ld -m elf_i386 -T kernel.ld -o kernel.elf $^
+	ld -m elf_i386 -T kernel.ld -N -o kernel.elf kernel/kernel_entry.o kernel/kernel.o
 	objcopy -O binary kernel.elf kernel.bin
 
 # Create floppy disk image with bootloader, stage2, and kernel
@@ -34,3 +36,5 @@ run:
 # Clean build artifacts
 clean:
 	rm -f *.bin *.o *.elf os.img
+	rm -f kernel/*.o
+	rm -f drivers/*.o
